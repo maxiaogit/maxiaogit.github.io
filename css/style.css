@@ -2582,11 +2582,11 @@ a.waves-effect .waves-ripple {
   height: 100%;
 }
 #menu .brand-wrap {
-  background: url(../img/brand.jpg);
+  background: url(../img/brands.jpg);
   background-size: 100% 100%;
 }
 #menu .brand {
-  padding: 40px 20px 2em;
+  padding: 61px 20px 2em;
   background: rgba(63, 81, 181, 0.5);
 }
 #menu .avatar {
