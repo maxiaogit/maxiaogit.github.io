@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>个人博客</title>
+  <subtitle>------生命不息,奋斗不止</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://maxiaogit.github.io/"/>
+  <updated>2016-09-05T14:03:40.660Z</updated>
+  <id>http://maxiaogit.github.io/</id>
+  
+  <author>
+    <name>Ma Xiao</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Handler导致内存泄露问题</title>
+    <link href="http://maxiaogit.github.io/2016/09/05/android-memory/"/>
+    <id>http://maxiaogit.github.io/2016/09/05/android-memory/</id>
+    <published>2016-09-05T13:58:35.000Z</published>
+    <updated>2016-09-05T14:03:40.660Z</updated>
+    
+    <content type="html"><![CDATA[<a id="more"></a>
+<h3 id="一般Handler写法："><a href="#一般Handler写法：" class="headerlink" title="一般Handler写法："></a>一般Handler写法：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Handler mHandler = new Handler() &#123;</div><div class="line">@Override</div><div class="line">public void handleMessage(Message msg) &#123;</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="导致问题："><a href="#导致问题：" class="headerlink" title="导致问题："></a>导致问题：</h3><p>当使用内部类（包括匿名类）来创建Handler的时候，Handler对象会隐式地持有一个外部类对象（通常是一个Activity）的引用,而常常在Activity退出后，消息队列还有未被处理完的消息，此时activity依然被handler引用，导致内存无法回收而内存泄露。</p>
+<h3 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h3><p>在Handler中增加一个对Activity的弱引用（WeakReference）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">static class MyHandler extends Handler &#123;</div><div class="line">WeakReference mActivityReference;</div><div class="line"></div><div class="line">MyHandler(Activity activity) &#123;</div><div class="line">mActivityReference= new WeakReference(activity);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Override</div><div class="line">public void handleMessage(Message msg) &#123;</div><div class="line">final Activity activity = mActivityReference.get();</div><div class="line">if (activity != null) &#123;</div><div class="line">mImageView.setImageBitmap(mBitmap);</div><div class="line">&#125;</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>对于上面的代码，用户在关闭Activity之后，就算后台线程还没结束，但由于仅有一条来自Handler的弱引用指向Activity，所以GC仍然会在检查的时候把Activity回收掉。这样，内存泄露的问题就不会出现了。</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h3 id=&quot;一般Handler写法：&quot;&gt;&lt;a href=&quot;#一般Handler写法：&quot; class=&quot;headerlink&quot; title=&quot;一般Handler写法：&quot;&gt;&lt;/a&gt;一般Handler写法：&lt;/h3&gt;&lt;figure class=&quot;
+    
+    </summary>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>android 沉浸式状态栏</title>
+    <link href="http://maxiaogit.github.io/2016/07/24/android%20%E6%B2%89%E6%B5%B8%E5%BC%8F%E7%8A%B6%E6%80%81%E6%A0%8F/"/>
+    <id>http://maxiaogit.github.io/2016/07/24/android 沉浸式状态栏/</id>
+    <published>2016-07-24T15:05:31.000Z</published>
+    <updated>2016-08-04T15:34:37.614Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p>这个特性是andorid4.4支持的，最少要api19才可以使用。下面介绍一下使用的方法，非常得简单：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public class MainActivity extends Activity &#123;</div><div class="line">@Override</div><div class="line">protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">super.onCreate(savedInstanceState);</div><div class="line">setContentView(R.layout.activity_main);</div><div class="line"></div><div class="line">//透明状态栏</div><div class="line">getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);</div><div class="line">//透明导航栏</div><div class="line">getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android自定义属性，format详解</title>
+    <link href="http://maxiaogit.github.io/2015/09/03/Android%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B1%9E%E6%80%A7%EF%BC%8Cformat%E8%AF%A6%E8%A7%A3/"/>
+    <id>http://maxiaogit.github.io/2015/09/03/Android自定义属性，format详解/</id>
+    <published>2015-09-03T01:59:45.000Z</published>
+    <updated>2016-08-04T15:32:00.472Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h3 id="1、reference：参考某一资源ID。"><a href="#1、reference：参考某一资源ID。" class="headerlink" title="1、reference：参考某一资源ID。"></a>1、reference：参考某一资源ID。</h3><h4 id="（1）属性定义："><a href="#（1）属性定义：" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;名称&quot;&gt;</div><div class="line"></div><div class="line">&lt;attr name = &quot;background&quot; format = &quot;reference&quot; /&gt;</div><div class="line"></div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用："><a href="#（2）属性使用：" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;ImageView</div><div class="line">android:layout_width = &quot;42dip&quot;</div><div class="line">android:layout_height = &quot;42dip&quot;</div><div class="line">android:background = &quot;@drawable/图片ID&quot;/&gt;</div></pre></td></tr></table></figure>
+<h3 id="2、color：颜色值"><a href="#2、color：颜色值" class="headerlink" title="2、color：颜色值"></a>2、color：颜色值</h3><h4 id="（1）属性定义：-1"><a href="#（1）属性定义：-1" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;名称&quot;&gt;</div><div class="line">&lt;attr name = &quot;textColor&quot; format = &quot;color&quot; /&gt;</div><div class="line">&lt;eclare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-1"><a href="#（2）属性使用：-1" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;TextView</div><div class="line">android:layout_width = &quot;42dip&quot;</div><div class="line">android:layout_height = &quot;42dip&quot;</div><div class="line">android:textColor = &quot;#00FF00&quot;/&gt;</div></pre></td></tr></table></figure>
+<h3 id="3、-boolean：布尔值。"><a href="#3、-boolean：布尔值。" class="headerlink" title="3、 boolean：布尔值。"></a>3、 boolean：布尔值。</h3><h4 id="（1）属性定义：-2"><a href="#（1）属性定义：-2" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;名称&quot;&gt;</div><div class="line">&lt;attr name = &quot;focusable&quot; format = &quot;boolean&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-2"><a href="#（2）属性使用：-2" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;Button</div><div class="line">android:layout_width = &quot;42dip&quot;</div><div class="line">android:layout_height = &quot;42dip&quot;</div><div class="line">android:focusable = &quot;true&quot;/&gt;</div></pre></td></tr></table></figure>
+<h3 id="4、-dimension：尺寸值。"><a href="#4、-dimension：尺寸值。" class="headerlink" title="4、 dimension：尺寸值。"></a>4、 dimension：尺寸值。</h3><h4 id="（1）属性定义：-3"><a href="#（1）属性定义：-3" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;名称&quot;&gt;</div><div class="line">&lt;attr name = &quot;layout_width&quot; format = &quot;dimension&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-3"><a href="#（2）属性使用：-3" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;Button</div><div class="line">android:layout_width = &quot;42dip&quot;</div><div class="line">android:layout_height = &quot;42dip&quot;</div><div class="line">/&gt;</div></pre></td></tr></table></figure>
+<h3 id="5、-float：浮点值。"><a href="#5、-float：浮点值。" class="headerlink" title="5、 float：浮点值。"></a>5、 float：浮点值。</h3><p>####（1）属性定义：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;AlphaAnimation&quot;&gt;</div><div class="line">&lt;attr name = &quot;fromAlpha&quot; format = &quot;float&quot; /&gt;</div><div class="line">&lt;attr name = &quot;toAlpha&quot; format = &quot;float&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="（2）属性使用：-4"><a href="#（2）属性使用：-4" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;alpha</div><div class="line">android:fromAlpha = &quot;1.0&quot;</div><div class="line">android:toAlpha = &quot;0.7&quot;</div><div class="line">/&gt;</div></pre></td></tr></table></figure>
+<h3 id="6、-integer：整型值。"><a href="#6、-integer：整型值。" class="headerlink" title="6、 integer：整型值。"></a>6、 integer：整型值。</h3><h4 id="（1）属性定义：-4"><a href="#（1）属性定义：-4" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;AnimatedRotateDrawable&quot;&gt;</div><div class="line">&lt;attr name = &quot;visible&quot; /&gt;</div><div class="line">&lt;attr name = &quot;frameDuration&quot; format=&quot;integer&quot; /&gt;</div><div class="line">&lt;attr name = &quot;framesCount&quot; format=&quot;integer&quot; /&gt;</div><div class="line">&lt;attr name = &quot;pivotX&quot; /&gt;</div><div class="line">&lt;attr name = &quot;pivotY&quot; /&gt;</div><div class="line">&lt;attr name = &quot;drawable&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-5"><a href="#（2）属性使用：-5" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;animated-rotate</div><div class="line">xmlns:android = &quot;[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)&quot;</div><div class="line">android:drawable = &quot;@drawable/图片ID&quot;</div><div class="line">android:pivotX = &quot;50%&quot;</div><div class="line">android:pivotY = &quot;50%&quot;</div><div class="line">android:framesCount = &quot;12&quot;</div><div class="line">android:frameDuration = &quot;100&quot;</div><div class="line">/&gt;</div></pre></td></tr></table></figure>
+<h3 id="7、-string：字符串。"><a href="#7、-string：字符串。" class="headerlink" title="7、 string：字符串。"></a>7、 string：字符串。</h3><p>####（1）属性定义：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;MapView&quot;&gt;</div><div class="line">&lt;attr name = &quot;apiKey&quot; format = &quot;string&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure></p>
+<h4 id="（2）属性使用：-6"><a href="#（2）属性使用：-6" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;com.google.android.maps.MapView</div><div class="line">android:layout_width = &quot;fill_parent&quot;</div><div class="line">android:layout_height = &quot;fill_parent&quot;</div><div class="line">android:apiKey = &quot;0jOkQ80oD1JL9C6HAja99uGXCRiS2CGjKO_bc_g&quot;</div><div class="line">/&gt;</div></pre></td></tr></table></figure>
+<h3 id="8、-fraction：百分数。"><a href="#8、-fraction：百分数。" class="headerlink" title="8、 fraction：百分数。"></a>8、 fraction：百分数。</h3><h4 id="（1）属性定义：-5"><a href="#（1）属性定义：-5" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name=&quot;RotateDrawable&quot;&gt;</div><div class="line">&lt;attr name = &quot;visible&quot; /&gt;</div><div class="line">&lt;attr name = &quot;fromDegrees&quot; format = &quot;float&quot; /&gt;</div><div class="line">&lt;attr name = &quot;toDegrees&quot; format = &quot;float&quot; /&gt;</div><div class="line">&lt;attr name = &quot;pivotX&quot; format = &quot;fraction&quot; /&gt;</div><div class="line">&lt;attr name = &quot;pivotY&quot; format = &quot;fraction&quot; /&gt;</div><div class="line">&lt;attr name = &quot;drawable&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-7"><a href="#（2）属性使用：-7" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">&lt;rotate</div><div class="line">xmlns:android = &quot;[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)&quot;</div><div class="line">android:interpolator = &quot;@anim/动画ID&quot;</div><div class="line">android:fromDegrees = &quot;0&quot;</div><div class="line">android:toDegrees = &quot;360&quot;</div><div class="line">android:pivotX = &quot;200%&quot;</div><div class="line">android:pivotY = &quot;300%&quot;</div><div class="line">android:duration = &quot;5000&quot;</div><div class="line">android:repeatMode = &quot;restart&quot;</div><div class="line">android:repeatCount = &quot;infinite&quot;</div><div class="line">/&gt;</div></pre></td></tr></table></figure>
+<h3 id="9、-enum：枚举值。"><a href="#9、-enum：枚举值。" class="headerlink" title="9、 enum：枚举值。"></a>9、 enum：枚举值。</h3><h4 id="（1）属性定义：-6"><a href="#（1）属性定义：-6" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name=&quot;名称&quot;&gt;</div><div class="line">&lt;attr name=&quot;orientation&quot;&gt;</div><div class="line">&lt;enum name=&quot;horizontal&quot; value=&quot;0&quot; /&gt;</div><div class="line">&lt;enum name=&quot;vertical&quot; value=&quot;1&quot; /&gt;</div><div class="line">&lt;/attr&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-8"><a href="#（2）属性使用：-8" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;LinearLayout</div><div class="line">xmlns:android = &quot;[http://schemas.android.com/apk/res/android](http://schemas.android.com/apk/res/android)&quot;</div><div class="line">android:orientation = &quot;vertical&quot;</div><div class="line">android:layout_width = &quot;fill_parent&quot;</div><div class="line">android:layout_height = &quot;fill_parent&quot;&gt;</div><div class="line">&lt;/LinearLayout&gt;</div></pre></td></tr></table></figure>
+<h3 id="10、-flag：位或运算。"><a href="#10、-flag：位或运算。" class="headerlink" title="10、 flag：位或运算。"></a>10、 flag：位或运算。</h3><h4 id="（1）属性定义：-7"><a href="#（1）属性定义：-7" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name=&quot;名称&quot;&gt;</div><div class="line">&lt;attr name=&quot;windowSoftInputMode&quot;&gt;</div><div class="line">&lt;flag name = &quot;stateUnspecified&quot; value = &quot;0&quot; /&gt;</div><div class="line">&lt;flag name = &quot;stateUnchanged&quot; value = &quot;1&quot; /&gt;</div><div class="line">&lt;flag name = &quot;stateHidden&quot; value = &quot;2&quot; /&gt;</div><div class="line">&lt;flag name = &quot;stateAlwaysHidden&quot; value = &quot;3&quot; /&gt;</div><div class="line">&lt;flag name = &quot;stateVisible&quot; value = &quot;4&quot; /&gt;</div><div class="line">&lt;flag name = &quot;stateAlwaysVisible&quot; value = &quot;5&quot; /&gt;</div><div class="line">&lt;flag name = &quot;adjustUnspecified&quot; value = &quot;0x00&quot; /&gt;</div><div class="line">&lt;flag name = &quot;adjustResize&quot; value = &quot;0x10&quot; /&gt;</div><div class="line">&lt;flag name = &quot;adjustPan&quot; value = &quot;0x20&quot; /&gt;</div><div class="line">&lt;flag name = &quot;adjustNothing&quot; value = &quot;0x30&quot; /&gt;</div><div class="line">&lt;/attr&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<h4 id="（2）属性使用：-9"><a href="#（2）属性使用：-9" class="headerlink" title="（2）属性使用："></a>（2）属性使用：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">&lt;activity</div><div class="line">android:name = &quot;.StyleAndThemeActivity&quot;</div><div class="line">android:label = &quot;@string/app_name&quot;</div><div class="line">android:windowSoftInputMode = &quot;stateUnspecified | stateUnchanged　|　stateHidden&quot;&gt;</div><div class="line">&lt;intent-filter&gt;</div><div class="line">&lt;action android:name = &quot;android.intent.action.MAIN&quot; /&gt;</div><div class="line">&lt;category android:name = &quot;android.intent.category.LAUNCHER&quot; /&gt;</div><div class="line">&lt;/intent-filter&gt;</div><div class="line">&lt;/activity&gt;</div></pre></td></tr></table></figure>
+<p>注意：<br>属性定义时可以指定多种类型值。</p>
+<h4 id="（1）属性定义：-8"><a href="#（1）属性定义：-8" class="headerlink" title="（1）属性定义："></a>（1）属性定义：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;declare-styleable name = &quot;名称&quot;&gt;</div><div class="line">&lt;attr name = &quot;background&quot; format = &quot;reference|color&quot; /&gt;</div><div class="line">&lt;/declare-styleable&gt;</div></pre></td></tr></table></figure>
+<p>####（2）属性使用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;ImageView</div><div class="line">android:layout_width = &quot;42dip&quot;</div><div class="line">android:layout_height = &quot;42dip&quot;</div><div class="line">android:background = &quot;@drawable/图片ID|#00FF00/&gt;</div></pre></td></tr></table></figure></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="android" scheme="http://maxiaogit.github.io/categories/android/"/>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Paint 常用方法总结</title>
+    <link href="http://maxiaogit.github.io/2015/07/28/Paint-%E5%B8%B8%E7%94%A8%E6%96%B9%E6%B3%95%E6%80%BB%E7%BB%93/"/>
+    <id>http://maxiaogit.github.io/2015/07/28/Paint-常用方法总结/</id>
+    <published>2015-07-28T13:14:04.000Z</published>
+    <updated>2016-08-04T15:33:55.934Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><table>
+<thead>
+<tr>
+<th>返回值</th>
+<th style="text-align:center">方法名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>void</td>
+<td style="text-align:center">reset()：恢复画笔到默认配置</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setARGB(int a, int r, int g, int b)：设置画笔透明度和颜色，其参数分别代表透明度、红色、绿色、蓝色</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setAlpha(int a)：设置画笔的透明度</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setAntiAlias(boolean aa)：设置是否抗锯齿</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setColor(int color)：设置画笔的颜色</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setFlags(int flags)：设置画笔的flags(HINTING_OFF、HINTING_ON等)</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setHinting(int mode)：设置画笔的提示模式</td>
+</tr>
+<tr>
+<td>PathEffect</td>
+<td style="text-align:center">setPathEffect(PathEffect effect)：设置绘制路径时的路径效果(ComposePathEffect, CornerPathEffect, DashPathEffect, DiscretePathEffect, PathDashPathEffect, SumPathEffect)</td>
+</tr>
+<tr>
+<td>Rasterizer</td>
+<td style="text-align:center">setRasterizer(Rasterizer rasterizer)</td>
+</tr>
+<tr>
+<td>Shader</td>
+<td style="text-align:center">setShader(Shader shader)：设置画笔的填充效果(BitmapShader, ComposeShader, LinearGradient, RadialGradient, SweepGradient)</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setShadowLayer(float radius, float dx, float dy, int color)：设置阴影效果</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setStrokeJoin(Paint.Join join)：设置画笔转弯处的连接风格(BEVEL-直线、MITER -锐角、ROUND-圆弧 )</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setStrokeWidth(float width)：设置画笔宽度</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setStyle(Paint.Style style)：设置Paint的填充风格(FILL-、FILL_AND_STROKE、STROKE )</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setTextAlign(Paint.Align align)：设置绘制文本时的文字对齐方式(CENTER -居中、LEFT-靠左、RIGHT -靠右：以(x,y)为中心)</td>
+</tr>
+<tr>
+<td>void</td>
+<td style="text-align:center">setTextSize(float textSize)：设置绘制文本的文字大小</td>
+</tr>
+</tbody>
+</table>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/categories/Android/"/>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Windows 下安装Hexo</title>
+    <link href="http://maxiaogit.github.io/2015/07/28/my-blog/"/>
+    <id>http://maxiaogit.github.io/2015/07/28/my-blog/</id>
+    <published>2015-07-28T05:56:25.000Z</published>
+    <updated>2016-07-28T07:12:12.561Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p>hexo是一个基于Node.js的静态博客程序，可以方便的生成静态网页托管在github和Heroku上,今天就教大家怎么在Windows下搭建Hexo.</p>
+<h2 id="安装Git"><a href="#安装Git" class="headerlink" title="安装Git"></a><strong>安装Git</strong></h2><p>去 Git 官网下载并安装即可,具体过程可以百度。</p>
+<h2 id="安装Node-js"><a href="#安装Node-js" class="headerlink" title="安装Node.js"></a><strong>安装Node.js</strong></h2><p>去NodeJs 官网根据自己系统信息下载相应版本并安装即可.<br>注意: 尽量使用默认路径,且路径中不要出现中文字，符以保证环境变量的自动配置.</p>
+<h2 id="安装Hexo"><a href="#安装Hexo" class="headerlink" title="安装Hexo"></a><strong>安装Hexo</strong></h2><p>使用npm命令即可直接安装 (可以直接在屏幕任意地方直接右键: Git Bash Here，也可进入dos下输入如下命令进行安装)<br><code>npm install -g hexo</code></p>
+<p>静静等待安装完毕即可.</p>
+<h2 id="创建Hexo目录"><a href="#创建Hexo目录" class="headerlink" title="创建Hexo目录"></a><strong>创建Hexo目录</strong></h2><p>目录可以再随意地方创建 (注:尽量全英文路径 避免不必要的问题)<br>EG: D:\Hexo (这是我的本地路径)<br>现在进入Hexo目录内在里面右键选择: Git Bash Here<br>初始化：Hexo 会自动生成建站所需要的文件<br><code>hexo init</code><br>安装依赖库：npm 会自动安装依赖环境<br><code>npm install</code></p>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a><strong>运行</strong></h2><p>Hexo 运行方法很简单只需要一条命令<br><code>hexo server</code><br>当出现以下样子就代表运行成功了 注:hexo s 是 hexo server 的简写<br><img src="http://mxhjan.com/hh.png" alt="icon"></p>
+<p>打开浏览器访问 <a href="http://localhost:4000" target="_blank" rel="external">http://localhost:4000</a> 看看效果吧 如下所示<br><img src="http://mxhjan.com/ss.png" alt=""></p>
+<p>至此hexo就安装完毕</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+    
+      <category term="Hexo" scheme="http://maxiaogit.github.io/tags/Hexo/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Java单列模式</title>
+    <link href="http://maxiaogit.github.io/2015/06/09/Java%E5%8D%95%E5%88%97%E6%A8%A1%E5%BC%8F/"/>
+    <id>http://maxiaogit.github.io/2015/06/09/Java单列模式/</id>
+    <published>2015-06-09T07:16:13.000Z</published>
+    <updated>2016-08-04T15:33:20.112Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p><span lang="EN-US">java</span>中单例模式是一种常见的设计模式，单例模式的写法有好几种，这里主要介绍：懒汉式单例和饿汉式单例。<span lang="EN-US"><br></span>　　单例模式特点：<span lang="EN-US"><br></span>　　<span lang="EN-US">1</span>、单例类只能有一个实例。<span lang="EN-US"><br></span>　　<span lang="EN-US">2</span>、单例类必须自己创建自己的唯一实例。<span lang="EN-US"><br></span>　　<span lang="EN-US">3</span>、单例类必须给所有其他对象提供这一实例。<span lang="EN-US"><br></span></p>
+<p>一、懒汉式单例</p>
+<div class="dp-highlighter bg_java"><br><br>1.  <span class="comment">//懒汉式单例类.在第一次调用的时候实例化自己 </span><br>2.  <span class="keyword">public</span> <span class="keyword">class</span> Singleton {<br>3.  <span class="keyword">private</span> Singleton() {}<br>4.  <span class="keyword">private</span> <span class="keyword">static</span> Singleton single=<span class="keyword">null</span>;<br>5.  <span class="comment">//静态工厂方法 </span><br>6.  <span class="keyword">public</span> <span class="keyword">static</span> Singleton getInstance() {<br>7.  <span class="keyword">if</span> (single == <span class="keyword">null</span>) {<br>8.  single = <span class="keyword">new</span> Singleton();<br>9.  }<br>10.  <span class="keyword">return</span> single;<br>11.  }<br>12.  }<br><div>Singleton通过将构造方法限定为private避免了类在外部被实例化，在同一个虚拟机范围内，Singleton的唯一实例只能通过getInstance()方法访问。</div>
+
+<p>（事实上，通过Java反射机制是能够实例化构造方法为private的类的，那基本上会使所有的Java单例实现失效。此问题在此处不做讨论，姑且掩耳盗铃地认为反射机制不存在。）</p>
+<p>但是以上懒汉式单例的实现没有考虑线程安全问题，它是线程不安全的，并发环境下很可能出现多个Singleton实例，要实现线程安全，有以下三种方式，都是对getInstance这个方法改造，保证了懒汉式单例的线程安全，如果你第一次接触单例模式，对线程安全不是很了解，可以先跳过下面这三小条，去看饿汉式单例，等看完后面再回头考虑线程安全的问题：</p>
+<p>1、在getInstance方法上加同步</p>
+<div class="dp-highlighter bg_java"><br><br>1.  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton getInstance() {<br>2.  <span class="keyword">if</span> (single == <span class="keyword">null</span>) {<br>3.  single = <span class="keyword">new</span> Singleton();<br>4.  }<br>5.  <span class="keyword">return</span> single;<br>6.  }<br></div><br>&nbsp;<br><br>2、双重检查锁定<br><br><div class="dp-highlighter bg_java"><br><br>1.  <span class="keyword">public</span> <span class="keyword">static</span> Singleton getInstance() {<br>2.  <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) {<br>3.  <span class="keyword">synchronized</span> (Singleton.<span class="keyword">class</span>) {<br>4.  <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) {<br>5.  singleton = <span class="keyword">new</span> Singleton();<br>6.  }<br>7.  }<br>8.  }<br>9.  <span class="keyword">return</span> singleton;<br>10.  }<br></div>
+
+<p>3、静态内部类</p>
+<div class="dp-highlighter bg_java"><br><br>1.  <span class="keyword">public</span> <span class="keyword">class</span> Singleton {<br>2.  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">class</span> LazyHolder {<br>3.  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton INSTANCE = <span class="keyword">new</span> Singleton();<br>4.  }<br>5.  <span class="keyword">private</span> Singleton (){}<br>6.  <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton getInstance() {<br>7.  <span class="keyword">return</span> LazyHolder.INSTANCE;<br>8.  }<br>9.  }<br></div><br>这种比上面1、2都好一些，既实现了线程安全，又避免了同步带来的性能影响。<br><br>二、饿汉式单例<br><br><div class="dp-highlighter bg_java"><br><br>1.  <span class="comment">//饿汉式单例类.在类初始化时，已经自行实例化 </span><br>2.  <span class="keyword">public</span> <span class="keyword">class</span> Singleton1 {<br>3.  <span class="keyword">private</span> Singleton1() {}<br>4.  <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton1 single = <span class="keyword">new</span> Singleton1();<br>5.  <span class="comment">//静态工厂方法 </span><br>6.  <span class="keyword">public</span> <span class="keyword">static</span> Singleton1 getInstance() {<br>7.  <span class="keyword">return</span> single;<br>8.  }<br>9.  }<br></div><br><div>饿汉式在类创建的同时就已经创建好一个静态的对象供系统使用，以后不再改变，所以天生是线程安全的。</div><br><div><br><br>饿汉式和懒汉式区别<br><br>从名字上来说，饿汉和懒汉，<br><br>饿汉就是类一旦加载，就把单例初始化完成，保证getInstance的时候，单例是已经存在的了，<br><br>而懒汉比较懒，只有当调用getInstance的时候，才回去初始化这个单例。<br><br>另外从以下两点再区分以下这两种方式：<br><br>1、线程安全：<br><br>饿汉式天生就是线程安全的，可以直接用于多线程而不会出现问题，<br><br>懒汉式本身是非线程安全的，为了实现线程安全有几种写法，分别是上面的1、2、3，这三种实现在资源加载和性能方面有些区别。<br><br>2、资源加载和性能：<br><br>饿汉式在类创建的同时就实例化一个静态对象出来，不管之后会不会使用这个单例，都会占据一定的内存，但是相应的，在第一次调用时速度也会更快，因为其资源已经初始化完成，<br><br>而懒汉式顾名思义，会延迟加载，在第一次使用该单例的时候才会实例化对象出来，第一次调用时要做初始化，如果要做的工作比较多，性能上会有些延迟，之后就和饿汉式一样了。<br><br></div><br></div>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="Java" scheme="http://maxiaogit.github.io/categories/Java/"/>
+    
+    
+      <category term="Java" scheme="http://maxiaogit.github.io/tags/Java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>ListView的动态刷新问题</title>
+    <link href="http://maxiaogit.github.io/2015/06/02/ListView%E7%9A%84%E5%8A%A8%E6%80%81%E5%88%B7%E6%96%B0%E9%97%AE%E9%A2%98/"/>
+    <id>http://maxiaogit.github.io/2015/06/02/ListView的动态刷新问题/</id>
+    <published>2015-06-02T14:09:50.000Z</published>
+    <updated>2016-08-04T15:33:32.940Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><h2 id="ListView的动态刷新问题——用notifyDataSetChanged没作用"><a href="#ListView的动态刷新问题——用notifyDataSetChanged没作用" class="headerlink" title="ListView的动态刷新问题——用notifyDataSetChanged没作用"></a>ListView的动态刷新问题——用notifyDataSetChanged没作用</h2><p>&nbsp;</p>
+<p>也许很多开发的朋友，尤其是Android初学者，在动态刷新ListView时，使用notifyDataSetChanged并没有起到作用。有时会被困扰得很痛苦。</p>
+<p>其实，在使用notifyDataSetChanged过程中，还是有细节需要注意的。举个例子：</p>
+<p>我的ListView使用的数据源是来自ArrayList。通常我们的做法是创建一个已经有我们想要提供给ListView的数据的ArrayList，例如：</p>
+<p><pre class="code">ArrayList&lt;Integer&gt; list  = new ArrayList&lt;Interger&gt;;<br>list.add(1);</pre><br>这里我们的list已经是指向了一个堆内存上了。接着我们想要改变list中的数据，而这个时候，就需要注意了，举个例子：我们在代码中有另外一个ArrayList叫做newlist，它是使用下面代码创建出来的：</p>
+<p><pre class="code">ArrayList&lt;Integer&gt; newlist  = new ArrayList&lt;Interger&gt;;<br>list.add(2);</pre><br>这个时候，newlist指向的是一个和list指向不同的堆内存，这个时候，我们直接用list = newlist来把newlist的数据交给list，在这里，实际上只是把list的指向改变了，让它也指向newlist指向的那个内存。那么这个时候我们再调用notifyDataSetChanged这个方法来通知listview更新数据就起不了任何作用了，原因很简单，就是list的指向已经改变，而调用notifyDataSetChanged会去检查原来list指向的数据是否变化，但是这时的list已经不是原来的list了，所以它无法判断，只能不作出响应了。那么，这个问题的解决方法是直接在原来的list上面更改数据，可以使用下面的代码来操作：</p>
+<p><pre class="code">list.clear();<br>list.addAll(newlist);<br>adapter.notifyDataSetChanged();<br></pre><br>这样，list的指向就不会改变，它还是指向原来那块内存，这样调用notifyDataSetChanged（）就可以起作用了。</p>
+<p>总结：在这里的重点就是要注意在开始时传给ListView的list指向不能被改变，需要从始至终指向同一个内存，这样调用notifyDataSetChanged后就能够检测到list的数据变化，从而触发ListView的重新绘制了！</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="android" scheme="http://maxiaogit.github.io/categories/android/"/>
+    
+    
+  </entry>
+  
+  <entry>
+    <title>常用 Git 命令</title>
+    <link href="http://maxiaogit.github.io/2015/05/04/%E5%B8%B8%E7%94%A8%20Git%20%E5%91%BD%E4%BB%A4/"/>
+    <id>http://maxiaogit.github.io/2015/05/04/常用 Git 命令/</id>
+    <published>2015-05-04T14:20:05.000Z</published>
+    <updated>2016-08-04T15:34:06.434Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p><img src="http://121.42.202.244/web/wp-content/uploads/2016/04/bg2015120901.png" alt="bg2015120901"></p>
+<p>下面是的常用 Git 命令清单。几个专用名词的译名如下。</p>
+<p>Workspace：工作区<br>Index / Stage：暂存区<br>Repository：仓库区（或本地仓库）<br>Remote：远程仓库<br>一、新建代码库</p>
+<h1 id="在当前目录新建一个Git代码库"><a href="#在当前目录新建一个Git代码库" class="headerlink" title="在当前目录新建一个Git代码库"></a>在当前目录新建一个Git代码库</h1><p>$ git init</p>
+<h1 id="新建一个目录，将其初始化为Git代码库"><a href="#新建一个目录，将其初始化为Git代码库" class="headerlink" title="新建一个目录，将其初始化为Git代码库"></a>新建一个目录，将其初始化为Git代码库</h1><p>$ git init [project-name]</p>
+<h1 id="下载一个项目和它的整个代码历史"><a href="#下载一个项目和它的整个代码历史" class="headerlink" title="下载一个项目和它的整个代码历史"></a>下载一个项目和它的整个代码历史</h1><p>$ git clone [url]<br>二、配置</p>
+<p>Git的设置文件为.gitconfig，它可以在用户主目录下（全局配置），也可以在项目目录下（项目配置）。</p>
+<h1 id="显示当前的Git配置"><a href="#显示当前的Git配置" class="headerlink" title="显示当前的Git配置"></a>显示当前的Git配置</h1><p>$ git config –list</p>
+<h1 id="编辑Git配置文件"><a href="#编辑Git配置文件" class="headerlink" title="编辑Git配置文件"></a>编辑Git配置文件</h1><p>$ git config -e [–global]</p>
+<h1 id="设置提交代码时的用户信息"><a href="#设置提交代码时的用户信息" class="headerlink" title="设置提交代码时的用户信息"></a>设置提交代码时的用户信息</h1><p>$ git config [–global] user.name “[name]”<br>$ git config [–global] user.email “[email address]”<br>三、增加/删除文件</p>
+<h1 id="添加指定文件到暂存区"><a href="#添加指定文件到暂存区" class="headerlink" title="添加指定文件到暂存区"></a>添加指定文件到暂存区</h1><p>$ git add [file1] [file2] …</p>
+<h1 id="添加指定目录到暂存区，包括子目录"><a href="#添加指定目录到暂存区，包括子目录" class="headerlink" title="添加指定目录到暂存区，包括子目录"></a>添加指定目录到暂存区，包括子目录</h1><p>$ git add [dir]</p>
+<h1 id="添加当前目录的所有文件到暂存区"><a href="#添加当前目录的所有文件到暂存区" class="headerlink" title="添加当前目录的所有文件到暂存区"></a>添加当前目录的所有文件到暂存区</h1><p>$ git add .</p>
+<h1 id="删除工作区文件，并且将这次删除放入暂存区"><a href="#删除工作区文件，并且将这次删除放入暂存区" class="headerlink" title="删除工作区文件，并且将这次删除放入暂存区"></a>删除工作区文件，并且将这次删除放入暂存区</h1><p>$ git rm [file1] [file2] …</p>
+<h1 id="停止追踪指定文件，但该文件会保留在工作区"><a href="#停止追踪指定文件，但该文件会保留在工作区" class="headerlink" title="停止追踪指定文件，但该文件会保留在工作区"></a>停止追踪指定文件，但该文件会保留在工作区</h1><p>$ git rm –cached [file]</p>
+<h1 id="改名文件，并且将这个改名放入暂存区"><a href="#改名文件，并且将这个改名放入暂存区" class="headerlink" title="改名文件，并且将这个改名放入暂存区"></a>改名文件，并且将这个改名放入暂存区</h1><p>$ git mv [file-original] [file-renamed]<br>四、代码提交</p>
+<h1 id="提交暂存区到仓库区"><a href="#提交暂存区到仓库区" class="headerlink" title="提交暂存区到仓库区"></a>提交暂存区到仓库区</h1><p>$ git commit -m [message]</p>
+<h1 id="提交暂存区的指定文件到仓库区"><a href="#提交暂存区的指定文件到仓库区" class="headerlink" title="提交暂存区的指定文件到仓库区"></a>提交暂存区的指定文件到仓库区</h1><p>$ git commit [file1] [file2] … -m [message]</p>
+<h1 id="提交工作区自上次commit之后的变化，直接到仓库区"><a href="#提交工作区自上次commit之后的变化，直接到仓库区" class="headerlink" title="提交工作区自上次commit之后的变化，直接到仓库区"></a>提交工作区自上次commit之后的变化，直接到仓库区</h1><p>$ git commit -a</p>
+<h1 id="提交时显示所有diff信息"><a href="#提交时显示所有diff信息" class="headerlink" title="提交时显示所有diff信息"></a>提交时显示所有diff信息</h1><p>$ git commit -v</p>
+<h1 id="使用一次新的commit，替代上一次提交"><a href="#使用一次新的commit，替代上一次提交" class="headerlink" title="使用一次新的commit，替代上一次提交"></a>使用一次新的commit，替代上一次提交</h1><h1 id="如果代码没有任何新变化，则用来改写上一次commit的提交信息"><a href="#如果代码没有任何新变化，则用来改写上一次commit的提交信息" class="headerlink" title="如果代码没有任何新变化，则用来改写上一次commit的提交信息"></a>如果代码没有任何新变化，则用来改写上一次commit的提交信息</h1><p>$ git commit –amend -m [message]</p>
+<h1 id="重做上一次commit，并包括指定文件的新变化"><a href="#重做上一次commit，并包括指定文件的新变化" class="headerlink" title="重做上一次commit，并包括指定文件的新变化"></a>重做上一次commit，并包括指定文件的新变化</h1><p>$ git commit –amend [file1] [file2] …<br>五、分支</p>
+<h1 id="列出所有本地分支"><a href="#列出所有本地分支" class="headerlink" title="列出所有本地分支"></a>列出所有本地分支</h1><p>$ git branch</p>
+<h1 id="列出所有远程分支"><a href="#列出所有远程分支" class="headerlink" title="列出所有远程分支"></a>列出所有远程分支</h1><p>$ git branch -r</p>
+<h1 id="列出所有本地分支和远程分支"><a href="#列出所有本地分支和远程分支" class="headerlink" title="列出所有本地分支和远程分支"></a>列出所有本地分支和远程分支</h1><p>$ git branch -a</p>
+<h1 id="新建一个分支，但依然停留在当前分支"><a href="#新建一个分支，但依然停留在当前分支" class="headerlink" title="新建一个分支，但依然停留在当前分支"></a>新建一个分支，但依然停留在当前分支</h1><p>$ git branch [branch-name]</p>
+<h1 id="新建一个分支，并切换到该分支"><a href="#新建一个分支，并切换到该分支" class="headerlink" title="新建一个分支，并切换到该分支"></a>新建一个分支，并切换到该分支</h1><p>$ git checkout -b [branch]</p>
+<h1 id="新建一个分支，指向指定commit"><a href="#新建一个分支，指向指定commit" class="headerlink" title="新建一个分支，指向指定commit"></a>新建一个分支，指向指定commit</h1><p>$ git branch [branch] [commit]</p>
+<h1 id="新建一个分支，与指定的远程分支建立追踪关系"><a href="#新建一个分支，与指定的远程分支建立追踪关系" class="headerlink" title="新建一个分支，与指定的远程分支建立追踪关系"></a>新建一个分支，与指定的远程分支建立追踪关系</h1><p>$ git branch –track [branch] [remote-branch]</p>
+<h1 id="切换到指定分支，并更新工作区"><a href="#切换到指定分支，并更新工作区" class="headerlink" title="切换到指定分支，并更新工作区"></a>切换到指定分支，并更新工作区</h1><p>$ git checkout [branch-name]</p>
+<h1 id="建立追踪关系，在现有分支与指定的远程分支之间"><a href="#建立追踪关系，在现有分支与指定的远程分支之间" class="headerlink" title="建立追踪关系，在现有分支与指定的远程分支之间"></a>建立追踪关系，在现有分支与指定的远程分支之间</h1><p>$ git branch –set-upstream [branch] [remote-branch]</p>
+<h1 id="合并指定分支到当前分支"><a href="#合并指定分支到当前分支" class="headerlink" title="合并指定分支到当前分支"></a>合并指定分支到当前分支</h1><p>$ git merge [branch]</p>
+<h1 id="选择一个commit，合并进当前分支"><a href="#选择一个commit，合并进当前分支" class="headerlink" title="选择一个commit，合并进当前分支"></a>选择一个commit，合并进当前分支</h1><p>$ git cherry-pick [commit]</p>
+<h1 id="删除分支"><a href="#删除分支" class="headerlink" title="删除分支"></a>删除分支</h1><p>$ git branch -d [branch-name]</p>
+<h1 id="删除远程分支"><a href="#删除远程分支" class="headerlink" title="删除远程分支"></a>删除远程分支</h1><p>$ git push origin –delete [branch-name]<br>$ git branch -dr [remote/branch]<br>六、标签</p>
+<h1 id="列出所有tag"><a href="#列出所有tag" class="headerlink" title="列出所有tag"></a>列出所有tag</h1><p>$ git tag</p>
+<h1 id="新建一个tag在当前commit"><a href="#新建一个tag在当前commit" class="headerlink" title="新建一个tag在当前commit"></a>新建一个tag在当前commit</h1><p>$ git tag [tag]</p>
+<h1 id="新建一个tag在指定commit"><a href="#新建一个tag在指定commit" class="headerlink" title="新建一个tag在指定commit"></a>新建一个tag在指定commit</h1><p>$ git tag [tag] [commit]</p>
+<h1 id="查看tag信息"><a href="#查看tag信息" class="headerlink" title="查看tag信息"></a>查看tag信息</h1><p>$ git show [tag]</p>
+<h1 id="提交指定tag"><a href="#提交指定tag" class="headerlink" title="提交指定tag"></a>提交指定tag</h1><p>$ git push [remote] [tag]</p>
+<h1 id="提交所有tag"><a href="#提交所有tag" class="headerlink" title="提交所有tag"></a>提交所有tag</h1><p>$ git push [remote] –tags</p>
+<h1 id="新建一个分支，指向某个tag"><a href="#新建一个分支，指向某个tag" class="headerlink" title="新建一个分支，指向某个tag"></a>新建一个分支，指向某个tag</h1><p>$ git checkout -b [branch] [tag]<br>七、查看信息</p>
+<h1 id="显示有变更的文件"><a href="#显示有变更的文件" class="headerlink" title="显示有变更的文件"></a>显示有变更的文件</h1><p>$ git status</p>
+<h1 id="显示当前分支的版本历史"><a href="#显示当前分支的版本历史" class="headerlink" title="显示当前分支的版本历史"></a>显示当前分支的版本历史</h1><p>$ git log</p>
+<h1 id="显示commit历史，以及每次commit发生变更的文件"><a href="#显示commit历史，以及每次commit发生变更的文件" class="headerlink" title="显示commit历史，以及每次commit发生变更的文件"></a>显示commit历史，以及每次commit发生变更的文件</h1><p>$ git log –stat</p>
+<h1 id="显示某个文件的版本历史，包括文件改名"><a href="#显示某个文件的版本历史，包括文件改名" class="headerlink" title="显示某个文件的版本历史，包括文件改名"></a>显示某个文件的版本历史，包括文件改名</h1><p>$ git log –follow [file]<br>$ git whatchanged [file]</p>
+<h1 id="显示指定文件相关的每一次diff"><a href="#显示指定文件相关的每一次diff" class="headerlink" title="显示指定文件相关的每一次diff"></a>显示指定文件相关的每一次diff</h1><p>$ git log -p [file]</p>
+<h1 id="显示指定文件是什么人在什么时间修改过"><a href="#显示指定文件是什么人在什么时间修改过" class="headerlink" title="显示指定文件是什么人在什么时间修改过"></a>显示指定文件是什么人在什么时间修改过</h1><p>$ git blame [file]</p>
+<h1 id="显示暂存区和工作区的差异"><a href="#显示暂存区和工作区的差异" class="headerlink" title="显示暂存区和工作区的差异"></a>显示暂存区和工作区的差异</h1><p>$ git diff</p>
+<h1 id="显示暂存区和上一个commit的差异"><a href="#显示暂存区和上一个commit的差异" class="headerlink" title="显示暂存区和上一个commit的差异"></a>显示暂存区和上一个commit的差异</h1><p>$ git diff –cached [file]</p>
+<h1 id="显示工作区与当前分支最新commit之间的差异"><a href="#显示工作区与当前分支最新commit之间的差异" class="headerlink" title="显示工作区与当前分支最新commit之间的差异"></a>显示工作区与当前分支最新commit之间的差异</h1><p>$ git diff HEAD</p>
+<h1 id="显示两次提交之间的差异"><a href="#显示两次提交之间的差异" class="headerlink" title="显示两次提交之间的差异"></a>显示两次提交之间的差异</h1><p>$ git diff [first-branch]…[second-branch]</p>
+<h1 id="显示某次提交的元数据和内容变化"><a href="#显示某次提交的元数据和内容变化" class="headerlink" title="显示某次提交的元数据和内容变化"></a>显示某次提交的元数据和内容变化</h1><p>$ git show [commit]</p>
+<h1 id="显示某次提交发生变化的文件"><a href="#显示某次提交发生变化的文件" class="headerlink" title="显示某次提交发生变化的文件"></a>显示某次提交发生变化的文件</h1><p>$ git show –name-only [commit]</p>
+<h1 id="显示某次提交时，某个文件的内容"><a href="#显示某次提交时，某个文件的内容" class="headerlink" title="显示某次提交时，某个文件的内容"></a>显示某次提交时，某个文件的内容</h1><p>$ git show [commit]:[filename]</p>
+<h1 id="显示当前分支的最近几次提交"><a href="#显示当前分支的最近几次提交" class="headerlink" title="显示当前分支的最近几次提交"></a>显示当前分支的最近几次提交</h1><p>$ git reflog<br>八、远程同步</p>
+<h1 id="下载远程仓库的所有变动"><a href="#下载远程仓库的所有变动" class="headerlink" title="下载远程仓库的所有变动"></a>下载远程仓库的所有变动</h1><p>$ git fetch [remote]</p>
+<h1 id="显示所有远程仓库"><a href="#显示所有远程仓库" class="headerlink" title="显示所有远程仓库"></a>显示所有远程仓库</h1><p>$ git remote -v</p>
+<h1 id="显示某个远程仓库的信息"><a href="#显示某个远程仓库的信息" class="headerlink" title="显示某个远程仓库的信息"></a>显示某个远程仓库的信息</h1><p>$ git remote show [remote]</p>
+<h1 id="增加一个新的远程仓库，并命名"><a href="#增加一个新的远程仓库，并命名" class="headerlink" title="增加一个新的远程仓库，并命名"></a>增加一个新的远程仓库，并命名</h1><p>$ git remote add [shortname] [url]</p>
+<h1 id="取回远程仓库的变化，并与本地分支合并"><a href="#取回远程仓库的变化，并与本地分支合并" class="headerlink" title="取回远程仓库的变化，并与本地分支合并"></a>取回远程仓库的变化，并与本地分支合并</h1><p>$ git pull [remote] [branch]</p>
+<h1 id="上传本地指定分支到远程仓库"><a href="#上传本地指定分支到远程仓库" class="headerlink" title="上传本地指定分支到远程仓库"></a>上传本地指定分支到远程仓库</h1><p>$ git push [remote] [branch]</p>
+<h1 id="强行推送当前分支到远程仓库，即使有冲突"><a href="#强行推送当前分支到远程仓库，即使有冲突" class="headerlink" title="强行推送当前分支到远程仓库，即使有冲突"></a>强行推送当前分支到远程仓库，即使有冲突</h1><p>$ git push [remote] –force</p>
+<h1 id="推送所有分支到远程仓库"><a href="#推送所有分支到远程仓库" class="headerlink" title="推送所有分支到远程仓库"></a>推送所有分支到远程仓库</h1><p>$ git push [remote] –all<br>九、撤销</p>
+<h1 id="恢复暂存区的指定文件到工作区"><a href="#恢复暂存区的指定文件到工作区" class="headerlink" title="恢复暂存区的指定文件到工作区"></a>恢复暂存区的指定文件到工作区</h1><p>$ git checkout [file]</p>
+<h1 id="恢复某个commit的指定文件到工作区"><a href="#恢复某个commit的指定文件到工作区" class="headerlink" title="恢复某个commit的指定文件到工作区"></a>恢复某个commit的指定文件到工作区</h1><p>$ git checkout [commit] [file]</p>
+<h1 id="恢复上一个commit的所有文件到工作区"><a href="#恢复上一个commit的所有文件到工作区" class="headerlink" title="恢复上一个commit的所有文件到工作区"></a>恢复上一个commit的所有文件到工作区</h1><p>$ git checkout .</p>
+<h1 id="重置暂存区的指定文件，与上一次commit保持一致，但工作区不变"><a href="#重置暂存区的指定文件，与上一次commit保持一致，但工作区不变" class="headerlink" title="重置暂存区的指定文件，与上一次commit保持一致，但工作区不变"></a>重置暂存区的指定文件，与上一次commit保持一致，但工作区不变</h1><p>$ git reset [file]</p>
+<h1 id="重置暂存区与工作区，与上一次commit保持一致"><a href="#重置暂存区与工作区，与上一次commit保持一致" class="headerlink" title="重置暂存区与工作区，与上一次commit保持一致"></a>重置暂存区与工作区，与上一次commit保持一致</h1><p>$ git reset –hard</p>
+<h1 id="重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变"><a href="#重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变" class="headerlink" title="重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变"></a>重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变</h1><p>$ git reset [commit]</p>
+<h1 id="重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致"><a href="#重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致" class="headerlink" title="重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致"></a>重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致</h1><p>$ git reset –hard [commit]</p>
+<h1 id="重置当前HEAD为指定commit，但保持暂存区和工作区不变"><a href="#重置当前HEAD为指定commit，但保持暂存区和工作区不变" class="headerlink" title="重置当前HEAD为指定commit，但保持暂存区和工作区不变"></a>重置当前HEAD为指定commit，但保持暂存区和工作区不变</h1><p>$ git reset –keep [commit]</p>
+<h1 id="新建一个commit，用来撤销指定commit"><a href="#新建一个commit，用来撤销指定commit" class="headerlink" title="新建一个commit，用来撤销指定commit"></a>新建一个commit，用来撤销指定commit</h1><h1 id="后者的所有变化都将被前者抵消，并且应用到当前分支"><a href="#后者的所有变化都将被前者抵消，并且应用到当前分支" class="headerlink" title="后者的所有变化都将被前者抵消，并且应用到当前分支"></a>后者的所有变化都将被前者抵消，并且应用到当前分支</h1><p>$ git revert [commit]<br>十、其他</p>
+<h1 id="生成一个可供发布的压缩包"><a href="#生成一个可供发布的压缩包" class="headerlink" title="生成一个可供发布的压缩包"></a>生成一个可供发布的压缩包</h1><p>$ git archive<br>（完）</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="Git" scheme="http://maxiaogit.github.io/categories/Git/"/>
+    
+    
+      <category term="Git" scheme="http://maxiaogit.github.io/tags/Git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Git-bug</title>
+    <link href="http://maxiaogit.github.io/2015/05/01/Git-bug/"/>
+    <id>http://maxiaogit.github.io/2015/05/01/Git-bug/</id>
+    <published>2015-05-01T14:24:56.000Z</published>
+    <updated>2016-08-04T15:33:07.331Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p>最近在学习Git Push的时候遇到一堆bug:<br><code>remote: error: is denied, because it will make the index and work tree inconsisent
+remote: error: with what you pushed, and will require &#39;git reset --hard&#39; to math
+remote: error: the work tree to HEAD.
+remote: error:
+remote: error: You can set &#39;receive.denyCurrentBranch&#39; configuration variable t
+remote: error: &#39;ignore&#39; or &#39;warn&#39; in the remote repository to allow pushing int
+remote: error: its current branch; however, this is not recommended unless you
+remote: error: arranged to update its work tree to match what you pushed in som
+remote: error: other way.
+remote: error: To squelch this message and still keep the default behaviour, se
+remote: error: &#39;receive.denyCurrentBranch&#39; configuration variable to &#39;refuse&#39;.
+To ssh://root@192.168.31.8:/home/git/mx.git
+ ! [remote rejected] master -&gt; master (branch is currently checked out)
+error: failed to push some refs to &#39;ssh://root@192.168.31.8:/home/git/mx.git</code><br>在查阅一些资料后终于知道是什么原因<br>这是由于git默认拒绝了push操作，需要进行设置，<br><code>git config receive.denyCurrentBranch=ignore</code><br>或修改.git/config添加如下代码：</p>
+<pre><code>[receive]
+denyCurrentBranch = ignore
+</code></pre><p>在初始化远程仓库时最好使用 git –bare init   而不要使用：git init<br>   如果使用了git init初始化，则远程仓库的目录下，也包含work tree，当本地仓库向远程仓库push时,   如果远程仓库正在push的分支上（如果当时不在push的分支，就没有问题）, 那么push后的结果不会反应在work tree上,  也即在远程仓库的目录下对应的文件还是之前的内容，必须得使用git reset –hard才能看到push后的内容.</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+    
+      <category term="Git" scheme="http://maxiaogit.github.io/tags/Git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android Studio常用快捷键</title>
+    <link href="http://maxiaogit.github.io/2015/03/15/android-studio%E5%B8%B8%E7%94%A8%E5%BF%AB%E6%8D%B7%E9%94%AE/"/>
+    <id>http://maxiaogit.github.io/2015/03/15/android-studio常用快捷键/</id>
+    <published>2015-03-15T13:40:34.000Z</published>
+    <updated>2016-08-04T15:32:58.440Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div></pre></td><td class="code"><pre><div class="line">Alt+回车 导入包,自动修正</div><div class="line">Ctrl+N   查找类</div><div class="line">Ctrl+Shift+N 查找文件</div><div class="line">Ctrl+Alt+L  格式化代码</div><div class="line">Ctrl+Alt+O 优化导入的类和包</div><div class="line">Alt+Insert 生成代码(如get,set方法,构造函数等)</div><div class="line">Ctrl+E或者Alt+Shift+C  最近更改的代码</div><div class="line">Ctrl+R 替换文本</div><div class="line">Ctrl+F 查找文本</div><div class="line">Ctrl+Shift+Space 自动补全代码</div><div class="line">Ctrl+空格 代码提示</div><div class="line">Ctrl+Alt+Space 类名或接口名提示</div><div class="line">Ctrl+P 方法参数提示</div><div class="line">Ctrl+Shift+Alt+N 查找类中的方法或变量</div><div class="line">Alt+Shift+C 对比最近修改的代码</div><div class="line"></div><div class="line">Shift+F6  重构-重命名</div><div class="line">Ctrl+Shift+先上键</div><div class="line">Ctrl+Y 删除行（ctrl+x不是删除行，是剪切。如果不选中，则为剪切当行。ths for 貌似掉线）</div><div class="line">Ctrl+D 复制行</div><div class="line">Ctrl+/ 或 Ctrl+Shift+/  注释（// 或者/*...*/ ）</div><div class="line">Ctrl+J  自动代码</div><div class="line">Ctrl+E 最近打开的文件</div><div class="line">Ctrl+H 显示类结构图</div><div class="line">Ctrl+Q 显示注释文档</div><div class="line">Alt+F1 查找代码所在位置</div><div class="line">Alt+1 快速打开或隐藏工程面板</div><div class="line">Ctrl+Alt+ left/right 返回至上次浏览的位置</div><div class="line">Alt+ left/right 切换代码视图</div><div class="line">Alt+ Up/Down 在方法间快速移动定位</div><div class="line">Ctrl+Shift+Up/Down 代码向上/下移动。</div><div class="line">F2 或Shift+F2 高亮错误或警告快速定位</div><div class="line"></div><div class="line">代码标签输入完成后，按Tab，生成代码。</div><div class="line">选中文本，按Ctrl+Shift+F7 ，高亮显示所有该文本，按Esc高亮消失。</div><div class="line">Ctrl+W 选中代码，连续按会有其他效果</div><div class="line">选中文本，按Alt+F3 ，逐个往下查找相同文本，并高亮显示。</div><div class="line">Ctrl+Up/Down 光标跳转到第一行或最后一行下</div><div class="line">Ctrl+B 快速打开光标处的类或方法</div><div class="line">最常用快捷键</div><div class="line">Ctrl＋E，可以显示最近编辑的文件列表</div><div class="line">Shift＋Click可以关闭文件</div><div class="line">Ctrl＋[或]可以跳到大括号的开头结尾</div><div class="line">Ctrl＋Shift＋Backspace可以跳转到上次编辑的地方</div><div class="line">Ctrl＋F12，可以显示当前文件的结构</div><div class="line">Ctrl＋F7可以查询当前元素在当前文件中的引用，然后按F3可以选择</div><div class="line">Ctrl＋N，可以快速打开类</div><div class="line">Ctrl＋Shift＋N，可以快速打开文件</div><div class="line">Alt＋Q可以看到当前方法的声明</div><div class="line">Ctrl＋W可以选择单词继而语句继而行继而函数</div><div class="line">Alt＋F1可以将正在编辑的元素在各个面板中定位</div><div class="line">Ctrl＋P，可以显示参数信息</div><div class="line">Ctrl＋Shift＋Insert可以选择剪贴板内容并插入</div><div class="line">Alt＋Insert可以生成构造器/Getter/Setter等</div><div class="line">Ctrl＋Alt＋V 可以引入变量。例如把括号内的SQL赋成一个变量</div><div class="line">Ctrl＋Alt＋T可以把代码包在一块内，例如try/catch</div><div class="line">Alt＋Up and Alt＋Down可在方法间快速移动</div><div class="line">下面的不是很有用</div><div class="line">在一些地方按Alt＋Enter可以得到一些Intention Action，例如将”==”改为”equals()”</div><div class="line">Ctrl＋Shift＋Alt＋N可以快速打开符号</div><div class="line">Ctrl＋Shift＋Space在很多时候都能够给出Smart提示</div><div class="line">Alt＋F3可以快速寻找</div><div class="line">Ctrl＋/和Ctrl＋Shift＋/可以注释代码</div><div class="line">Ctrl＋Alt＋B可以跳转到抽象方法的实现</div><div class="line">Ctrl＋O可以选择父类的方法进行重写</div><div class="line">Ctrl＋Q可以看JavaDoc</div><div class="line">Ctrl＋Alt＋Space是类名自动完成</div><div class="line">快速打开类/文件/符号时，可以使用通配符，也可以使用缩写</div><div class="line">Live Templates! Ctrl＋J</div><div class="line">Ctrl＋Shift＋F7可以高亮当前元素在当前文件中的使用</div><div class="line">Ctrl＋Alt＋Up /Ctrl＋Alt＋Down可以快速跳转搜索结果</div><div class="line">Ctrl＋Shift＋J可以整合两行</div><div class="line">Alt＋F8是计算变量值</div></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="android" scheme="http://maxiaogit.github.io/categories/android/"/>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux常用命令</title>
+    <link href="http://maxiaogit.github.io/2014/10/20/Linux%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"/>
+    <id>http://maxiaogit.github.io/2014/10/20/Linux常用命令/</id>
+    <published>2014-10-20T02:18:14.000Z</published>
+    <updated>2016-08-04T15:33:26.721Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id=""><a href="#" class="headerlink" title=""></a><a id="more"></a></h2><p>1、cd命令</p>
+<p>这是一个非常基本，也是大家经常需要使用的命令，它用于切换当前目录，它的参数是要切换到的目录的路径，可以是绝对路径，也可以是相对路径。如：<br>cd /root/Docements # 切换到目录/root/Docements<br>cd ./path # 切换到当前目录下的path目录中，“.”表示当前目录<br>cd ../path # 切换到上层目录中的path目录中，“..”表示上一层目录<br>2、ls命令<br>这是一个非常有用的查看文件与目录的命令，list之意，它的参数非常多，下面就列出一些我常用的参数吧，如下：<br>-l ：列出长数据串，包含文件的属性与权限数据等<br>-a ：列出全部的文件，连同隐藏文件（开头为.的文件）一起列出来（常用）<br>-d ：仅列出目录本身，而不是列出目录的文件数据<br>-h ：将文件容量以较易读的方式（GB，kB等）列出来<br>-R ：连同子目录的内容一起列出（递归列出），等于该目录下的所有文件都会显示出来<br>注：这些参数也可以组合使用，下面举两个例子：<br>ls -l #以长数据串的形式列出当前目录下的数据文件和目录<br>ls -lR #以长数据串的形式列出当前目录下的所有文件<br>3、grep命令<br>该命令常用于分析一行的信息，若当中有我们所需要的信息，就将该行显示出来，该命令通常与管道命令一起使用，用于对一些命令的输出进行筛选加工等等，它的简单语法为<br>grep [-acinv] [–color=auto] ‘查找字符串’ filename<br>它的常用参数如下：<br>-a ：将binary文件以text文件的方式查找数据<br>-c ：计算找到‘查找字符串’的次数<br>-i ：忽略大小写的区别，即把大小写视为相同<br>-v ：反向选择，即显示出没有‘查找字符串’内容的那一行</p>
+<h1 id="例如："><a href="#例如：" class="headerlink" title="例如："></a>例如：</h1><h1 id="取出文件-etc-man-config中包含MANPATH的行，并把找到的关键字加上颜色"><a href="#取出文件-etc-man-config中包含MANPATH的行，并把找到的关键字加上颜色" class="headerlink" title="取出文件/etc/man.config中包含MANPATH的行，并把找到的关键字加上颜色"></a>取出文件/etc/man.config中包含MANPATH的行，并把找到的关键字加上颜色</h1><p>grep –color=auto ‘MANPATH’ /etc/man.config</p>
+<h1 id="把ls-l的输出中包含字母file（不区分大小写）的内容输出"><a href="#把ls-l的输出中包含字母file（不区分大小写）的内容输出" class="headerlink" title="把ls -l的输出中包含字母file（不区分大小写）的内容输出"></a>把ls -l的输出中包含字母file（不区分大小写）的内容输出</h1><p>ls -l | grep -i file<br>4、find命令<br>find是一个基于查找的功能非常强大的命令，相对而言，它的使用也相对较为复杂，参数也比较多，所以在这里将给把它们分类列出，它的基本语法如下：<br>find [PATH] [option] [action]</p>
+<h1 id="与时间有关的参数："><a href="#与时间有关的参数：" class="headerlink" title="与时间有关的参数："></a>与时间有关的参数：</h1><p>-mtime n : n为数字，意思为在n天之前的“一天内”被更改过的文件；<br>-mtime +n : 列出在n天之前（不含n天本身）被更改过的文件名；<br>-mtime -n : 列出在n天之内（含n天本身）被更改过的文件名；<br>-newer file : 列出比file还要新的文件名</p>
+<h1 id="例如：-1"><a href="#例如：-1" class="headerlink" title="例如："></a>例如：</h1><p>find /root -mtime 0 # 在当前目录下查找今天之内有改动的文件</p>
+<h1 id="与用户或用户组名有关的参数："><a href="#与用户或用户组名有关的参数：" class="headerlink" title="与用户或用户组名有关的参数："></a>与用户或用户组名有关的参数：</h1><p>-user name : 列出文件所有者为name的文件<br>-group name : 列出文件所属用户组为name的文件<br>-uid n : 列出文件所有者为用户ID为n的文件<br>-gid n : 列出文件所属用户组为用户组ID为n的文件</p>
+<h1 id="例如：-2"><a href="#例如：-2" class="headerlink" title="例如："></a>例如：</h1><p>find /home/ljianhui -user ljianhui # 在目录/home/ljianhui中找出所有者为ljianhui的文件</p>
+<h1 id="与文件权限及名称有关的参数："><a href="#与文件权限及名称有关的参数：" class="headerlink" title="与文件权限及名称有关的参数："></a>与文件权限及名称有关的参数：</h1><p>-name filename ：找出文件名为filename的文件<br>-size [+-]SIZE ：找出比SIZE还要大（+）或小（-）的文件<br>-tpye TYPE ：查找文件的类型为TYPE的文件，TYPE的值主要有：一般文件（f)、设备文件（b、c）、<br>目录（d）、连接文件（l）、socket（s）、FIFO管道文件（p）；<br>-perm mode ：查找文件权限刚好等于mode的文件，mode用数字表示，如0755；<br>-perm -mode ：查找文件权限必须要全部包括mode权限的文件，mode用数字表示<br>-perm +mode ：查找文件权限包含任一mode的权限的文件，mode用数字表示</p>
+<h1 id="例如：-3"><a href="#例如：-3" class="headerlink" title="例如："></a>例如：</h1><p>find / -name passwd # 查找文件名为passwd的文件<br>find . -perm 0755 # 查找当前目录中文件权限的0755的文件<br>find . -size +12k # 查找当前目录中大于12KB的文件，注意c表示byte<br>5、cp命令<br>该命令用于复制文件，copy之意，它还可以把多个文件一次性地复制到一个目录下，它的常用参数如下：<br>-a ：将文件的特性一起复制<br>-p ：连同文件的属性一起复制，而非使用默认方式，与-a相似，常用于备份<br>-i ：若目标文件已经存在时，在覆盖时会先询问操作的进行<br>-r ：递归持续复制，用于目录的复制行为<br>-u ：目标文件与源文件有差异时才会复制<br>例如 ：<br>cp -a file1 file2 #连同文件的所有特性把文件file1复制成文件file2<br>cp file1 file2 file3 dir #把文件file1、file2、file3复制到目录dir中<br>6、mv命令<br>该命令用于移动文件、目录或更名，move之意，它的常用参数如下：<br>-f ：force强制的意思，如果目标文件已经存在，不会询问而直接覆盖<br>-i ：若目标文件已经存在，就会询问是否覆盖<br>-u ：若目标文件已经存在，且比目标文件新，才会更新<br>注：该命令可以把一个文件或多个文件一次移动一个文件夹中，但是最后一个目标文件一定要是“目录”。</p>
+<p>例如：<br>mv file1 file2 file3 dir # 把文件file1、file2、file3移动到目录dir中<br>mv file1 file2 # 把文件file1重命名为file2<br>7、rm命令<br>该命令用于删除文件或目录，remove之间，它的常用参数如下：<br>-f ：就是force的意思，忽略不存在的文件，不会出现警告消息<br>-i ：互动模式，在删除前会询问用户是否操作<br>-r ：递归删除，最常用于目录删除，它是一个非常危险的参数<br>例如：<br>rm -i file # 删除文件file，在删除之前会询问是否进行该操作<br>rm -fr dir # 强制删除目录dir中的所有文件<br>8、ps命令<br>该命令用于将某个时间点的进程运行情况选取下来并输出，process之意，它的常用参数如下：<br>-A ：所有的进程均显示出来<br>-a ：不与terminal有关的所有进程<br>-u ：有效用户的相关进程<br>-x ：一般与a参数一起使用，可列出较完整的信息<br>-l ：较长，较详细地将PID的信息列出<br>其实我们只要记住ps一般使用的命令参数搭配即可，它们并不多，如下：<br>ps aux # 查看系统所有的进程数据<br>ps ax # 查看不与terminal有关的所有进程<br>ps -lA # 查看系统所有的进程数据<br>ps axjf # 查看连同一部分进程树状态<br>9、kill命令<br>该命令用于向某个工作（%jobnumber）或者是某个PID（数字）传送一个信号，它通常与ps和jobs命令一起使用，它的基本语法如下：<br>kill -signal PID<br>signal的常用参数如下：<br>注：最前面的数字为信号的代号，使用时可以用代号代替相应的信号。<br>1：SIGHUP，启动被终止的进程<br>2：SIGINT，相当于输入ctrl+c，中断一个程序的进行<br>9：SIGKILL，强制中断一个进程的进行<br>15：SIGTERM，以正常的结束进程方式来终止进程<br>17：SIGSTOP，相当于输入ctrl+z，暂停一个进程的进行<br>例如：</p>
+<h1 id="以正常的结束进程方式来终于第一个后台工作，可用jobs命令查看后台中的第一个工作进程"><a href="#以正常的结束进程方式来终于第一个后台工作，可用jobs命令查看后台中的第一个工作进程" class="headerlink" title="以正常的结束进程方式来终于第一个后台工作，可用jobs命令查看后台中的第一个工作进程"></a>以正常的结束进程方式来终于第一个后台工作，可用jobs命令查看后台中的第一个工作进程</h1><p>kill -SIGTERM %1</p>
+<h1 id="重新改动进程ID为PID的进程，PID可用ps命令通过管道命令加上grep命令进行筛选获得"><a href="#重新改动进程ID为PID的进程，PID可用ps命令通过管道命令加上grep命令进行筛选获得" class="headerlink" title="重新改动进程ID为PID的进程，PID可用ps命令通过管道命令加上grep命令进行筛选获得"></a>重新改动进程ID为PID的进程，PID可用ps命令通过管道命令加上grep命令进行筛选获得</h1><p>kill -SIGHUP PID<br>10、killall命令<br>该命令用于向一个命令启动的进程发送一个信号，它的一般语法如下：<br>killall [-iIe] [command name]<br>它的参数如下：<br>-i ：交互式的意思，若需要删除时，会询问用户<br>-e ：表示后面接的command name要一致，但command name不能超过15个字符<br>-I ：命令名称忽略大小写</p>
+<h1 id="例如：-4"><a href="#例如：-4" class="headerlink" title="例如："></a>例如：</h1><p>killall -SIGHUP syslogd # 重新启动syslogd<br>11、file命令<br>该命令用于判断接在file命令后的文件的基本数据，因为在Linux下文件的类型并不是以后缀为分的，所以这个命令对我们来说就很有用了，它的用法非常简单，基本语法如下：<br>file filename</p>
+<p>#例如：<br>file ./test<br>12、tar命令<br>该命令用于对文件进行打包，默认情况并不会压缩，如果指定了相应的参数，它还会调用相应的压缩程序（如gzip和bzip等）进行压缩和解压。它的常用参数如下：<br>-c ：新建打包文件<br>-t ：查看打包文件的内容含有哪些文件名<br>-x ：解打包或解压缩的功能，可以搭配-C（大写）指定解压的目录，注意-c,-t,-x不能同时出现在同一条命令中<br>-j ：通过bzip2的支持进行压缩/解压缩<br>-z ：通过gzip的支持进行压缩/解压缩<br>-v ：在压缩/解压缩过程中，将正在处理的文件名显示出来<br>-f filename ：filename为要处理的文件<br>-C dir ：指定压缩/解压缩的目录dir<br>上面的解说可以已经让你晕过去了，但是通常我们只需要记住下面三条命令即可：<br>压缩：tar -jcv -f filename.tar.bz2 要被处理的文件或目录名称<br>查询：tar -jtv -f filename.tar.bz2<br>解压：tar -jxv -f filename.tar.bz2 -C 欲解压缩的目录<br>注：文件名并不定要以后缀tar.bz2结尾，这里主要是为了说明使用的压缩程序为bzip2</p>
+<p>13、cat命令<br>该命令用于查看文本文件的内容，后接要查看的文件名，通常可用管道与more和less一起使用，从而可以一页页地查看数据。例如：<br>cat text | less # 查看text文件中的内容</p>
+<h1 id="注：这条命令也可以使用less-text来代替"><a href="#注：这条命令也可以使用less-text来代替" class="headerlink" title="注：这条命令也可以使用less text来代替"></a>注：这条命令也可以使用less text来代替</h1><p>14、chgrp命令<br>该命令用于改变文件所属用户组，它的使用非常简单，它的基本用法如下：<br>chgrp [-R] dirname/filename<br>-R ：进行递归的持续对所有文件和子目录更改</p>
+<h1 id="例如：-5"><a href="#例如：-5" class="headerlink" title="例如："></a>例如：</h1><p>chgrp users -R ./dir # 递归地把dir目录下中的所有文件和子目录下所有文件的用户组修改为users<br>15、chown命令<br>该命令用于改变文件的所有者，与chgrp命令的使用方法相同，只是修改的文件属性不同，不再详述。</p>
+<p>16、chmod命令<br>该命令用于改变文件的权限，一般的用法如下：<br>chmod [-R] xyz 文件或目录<br>-R：进行递归的持续更改，即连同子目录下的所有文件都会更改<br>同时，chmod还可以使用u（user）、g（group）、o（other）、a（all）和+（加入）、-（删除）、=（设置）跟rwx搭配来对文件的权限进行更改。</p>
+<h1 id="例如：-6"><a href="#例如：-6" class="headerlink" title="例如："></a>例如：</h1><p>chmod 0755 file # 把file的文件权限改变为-rxwr-xr-x<br>chmod g+w file # 向file的文件权限中加入用户组可写权限<br>18、vim命令<br>该命令主要用于文本编辑，它接一个或多个文件名作为参数，如果文件存在就打开，如果文件不存在就以该文件名创建一个文件。vim是一个非常好用的文本编辑器，它里面有很多非常好用的命令，在这里不再多说。你可以从这里下载vim常用操作的详细说明。</p>
+<p>19、gcc命令<br>对于一个用Linux开发C程序的人来说，这个命令就非常重要了，它用于把C语言的源程序文件，编译成可执行程序，由于g++的很多参数跟它非常相似，所以这里只介绍gcc的参数，它的常用参数如下：<br>-o ：output之意，用于指定生成一个可执行文件的文件名<br>-c ：用于把源文件生成目标文件（.o)，并阻止编译器创建一个完整的程序<br>-I ：增加编译时搜索头文件的路径<br>-L ：增加编译时搜索静态连接库的路径<br>-S ：把源文件生成汇编代码文件<br>-lm：表示标准库的目录中名为libm.a的函数库<br>-lpthread ：连接NPTL实现的线程库<br>-std= ：用于指定把使用的C语言的版本</p>
+<h1 id="例如：-7"><a href="#例如：-7" class="headerlink" title="例如："></a>例如：</h1><h1 id="把源文件test-c按照c99标准编译成可执行程序test"><a href="#把源文件test-c按照c99标准编译成可执行程序test" class="headerlink" title="把源文件test.c按照c99标准编译成可执行程序test"></a>把源文件test.c按照c99标准编译成可执行程序test</h1><p>gcc -o test test.c -lm -std=c99</p>
+<p>#把源文件test.c转换为相应的汇编程序源文件test.s<br>gcc -S test.c<br>20、time命令<br>该命令用于测算一个命令（即程序）的执行时间。它的使用非常简单，就像平时输入命令一样，不过在命令的前面加入一个time即可，例如：<br>time ./process<br>time ps aux<br>在程序或命令运行结束后，在最后输出了三个时间，它们分别是：<br>user：用户CPU时间，命令执行完成花费的用户CPU时间，即命令在用户态中执行时间总和；<br>system：系统CPU时间，命令执行完成花费的系统CPU时间，即命令在核心态中执行时间总和；<br>real：实际时间，从command命令行开始执行到运行终止的消逝时间</p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title=&quot;&quot;&gt;&lt;/a&gt;
+    
+    </summary>
+    
+      <category term="Linux" scheme="http://maxiaogit.github.io/categories/Linux/"/>
+    
+    
+      <category term="linux" scheme="http://maxiaogit.github.io/tags/linux/"/>
+    
+  </entry>
+  
+</feed>
