@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://maxiaogit.github.io/"/>
-  <updated>2016-09-05T14:03:40.660Z</updated>
+  <updated>2017-03-07T14:59:37.139Z</updated>
   <id>http://maxiaogit.github.io/</id>
   
   <author>
@@ -14,6 +14,36 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Android Studio 2.2 搭建JNI开发环境</title>
+    <link href="http://maxiaogit.github.io/2016/12/20/JNI%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/"/>
+    <id>http://maxiaogit.github.io/2016/12/20/JNI环境配置/</id>
+    <published>2016-12-20T14:20:34.000Z</published>
+    <updated>2017-03-07T14:59:37.139Z</updated>
+    
+    <content type="html"><![CDATA[<hr>
+<p>Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。</p>
+<h3 id="1、安装Android-Studio"><a href="#1、安装Android-Studio" class="headerlink" title="1、安装Android Studio"></a>1、安装Android Studio</h3><p>  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 </p>
+<h3 id="2、Android-NDK"><a href="#2、Android-NDK" class="headerlink" title="2、Android NDK"></a>2、Android NDK</h3><p>安装好Android Studio后打开然后点击File-&gt;Other Strings-&gt;Default Project Structure的到如下图所示界面<br><img src="/img/android/jni1.png" alt=""></p>
+<h3 id="3、安装Cmake和-LLDB和NDK"><a href="#3、安装Cmake和-LLDB和NDK" class="headerlink" title="3、安装Cmake和 LLDB和NDK"></a>3、安装Cmake和 LLDB和NDK</h3><p>打开System Settings-&gt;Android SDK-&gt;SDK Tools选中Cmake、LLDB和NDK点击确认，软件会自动安装。<br><img src="/img/android/jni2.png" alt=""></p>
+<h3 id="4、新建项目"><a href="#4、新建项目" class="headerlink" title="4、新建项目"></a>4、新建项目</h3><p>新建一个支持 “Include C++ Support” 的项目，把 Include C++ Support 前面的选项打上勾，然后一路 Next，直到 Finish 为止<br><img src="/img/android/jni3.png" alt=""></p>
+<h3 id="5、配置及运行"><a href="#5、配置及运行" class="headerlink" title="5、配置及运行"></a>5、配置及运行</h3><p> 新建完NDk项目之后会自动编译这时会自动生成一些配置，项目中会多几个文件如图：<br><img src="/img/android/jni4.png" alt=""><br>在、build.gradle文件中会多出如下配置<br><img src="/img/android/jni5.png" alt=""><br>MainActivity 部分<br><img src="/img/android/jni6.png" alt=""><br>CMakeLists.txt 部分 其中红色方框部分的名称可以同时更改, 注意两者需要一致,也必须和MainActivity中相同<br><img src="/img/android/jni7.png" alt=""><br>C/C++ 部分<br><img src="/img/android/jni8.png" alt=""></p>
+<h3 id="6、运行结果"><a href="#6、运行结果" class="headerlink" title="6、运行结果"></a>6、运行结果</h3><p><img src="/img/android/jni9.png" alt=""></p>
+]]></content>
+    
+    <summary type="html">
+    
+      &lt;hr&gt;
+&lt;p&gt;Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。&lt;/p&gt;
+&lt;h3 id=&quot;1、安装Android-Studio&quot;&gt;&lt;a href=&quot;#
+    
+    </summary>
+    
+    
+      <category term="Android" scheme="http://maxiaogit.github.io/tags/Android/"/>
+    
+  </entry>
   
   <entry>
     <title>Handler导致内存泄露问题</title>

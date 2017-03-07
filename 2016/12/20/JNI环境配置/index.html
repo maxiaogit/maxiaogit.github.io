@@ -3,26 +3,39 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Handler导致内存泄露问题 | 个人博客 | ------生命不息,奋斗不止</title>
+  <title>Android Studio 2.2 搭建JNI开发环境 | 个人博客 | ------生命不息,奋斗不止</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
   <meta name="theme-color" content="#3F51B5">
   
   
   <meta name="keywords" content="Android">
-  <meta name="description" content="一般Handler写法：12345Handler mHandler = new Handler() &amp;#123;@Overridepublic void handleMessage(Message msg) &amp;#123;&amp;#125;&amp;#125;
-导致问题：当使用内部类（包括匿名类）来创建Handler的时候，Handler对象会隐式地持有一个外部类对象（通常是一个Activity）的引用,而常常">
+  <meta name="description" content="Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。
+1、安装Android Studio  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 
+2、Android NDK安装好Android Studio后打开然后点击File-&amp;gt;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Handler导致内存泄露问题">
-<meta property="og:url" content="http://maxiaogit.github.io/2016/09/05/android-memory/index.html">
+<meta property="og:title" content="Android Studio 2.2 搭建JNI开发环境">
+<meta property="og:url" content="http://maxiaogit.github.io/2016/12/20/JNI环境配置/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="一般Handler写法：12345Handler mHandler = new Handler() &amp;#123;@Overridepublic void handleMessage(Message msg) &amp;#123;&amp;#125;&amp;#125;
-导致问题：当使用内部类（包括匿名类）来创建Handler的时候，Handler对象会隐式地持有一个外部类对象（通常是一个Activity）的引用,而常常">
-<meta property="og:updated_time" content="2016-09-05T14:03:40.660Z">
+<meta property="og:description" content="Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。
+1、安装Android Studio  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 
+2、Android NDK安装好Android Studio后打开然后点击File-&amp;gt;">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni1.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni2.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni3.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni4.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni5.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni6.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni7.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni8.png">
+<meta property="og:image" content="http://maxiaogit.github.io/img/android/jni9.png">
+<meta property="og:updated_time" content="2017-03-07T14:59:37.139Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Handler导致内存泄露问题">
-<meta name="twitter:description" content="一般Handler写法：12345Handler mHandler = new Handler() &amp;#123;@Overridepublic void handleMessage(Message msg) &amp;#123;&amp;#125;&amp;#125;
-导致问题：当使用内部类（包括匿名类）来创建Handler的时候，Handler对象会隐式地持有一个外部类对象（通常是一个Activity）的引用,而常常">
+<meta name="twitter:title" content="Android Studio 2.2 搭建JNI开发环境">
+<meta name="twitter:description" content="Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。
+1、安装Android Studio  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 
+2、Android NDK安装好Android Studio后打开然后点击File-&amp;gt;">
+<meta name="twitter:image" content="http://maxiaogit.github.io/img/android/jni1.png">
   
     <link rel="alternative" href="/atom.xml" title="个人博客" type="application/atom+xml">
   
@@ -100,7 +113,7 @@
         <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
           <i class="icon icon-lg icon-navicon"></i>
         </a>
-        <div class="flex-col header-title ellipsis">Handler导致内存泄露问题</div>
+        <div class="flex-col header-title ellipsis">Android Studio 2.2 搭建JNI开发环境</div>
         
         <div class="search-wrap" id="search-wrap">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
@@ -121,11 +134,11 @@
 </header>
 <header class="content-header">
   <div class="container">
-    <h1 class="author">Handler导致内存泄露问题</h1>
+    <h1 class="author">Android Studio 2.2 搭建JNI开发环境</h1>
     <h5 class="subtitle">
         
-            <time datetime="2016-09-05T13:58:35.000Z" itemprop="datePublished" class="page-time">
-  2016-09-05
+            <time datetime="2016-12-20T14:20:34.000Z" itemprop="datePublished" class="page-time">
+  2016-12-20
 </time>
 
 
@@ -135,7 +148,7 @@
 </header>
 
     <div class="container body-wrap">
-      <article id="post-android-memory" 
+      <article id="post-JNI环境配置" 
   class="article article-type-post" itemprop="blogPost">
     <div class="post-meat flex-row">
         
@@ -186,7 +199,7 @@
 
             
             <nav class="post-toc-wrap" id="post-toc">
-            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#一般Handler写法："><span class="post-toc-text">一般Handler写法：</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#导致问题："><span class="post-toc-text">导致问题：</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#解决方法："><span class="post-toc-text">解决方法：</span></a></li></ol>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#1、安装Android-Studio"><span class="post-toc-text">1、安装Android Studio</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#2、Android-NDK"><span class="post-toc-text">2、Android NDK</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#3、安装Cmake和-LLDB和NDK"><span class="post-toc-text">3、安装Cmake和 LLDB和NDK</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#4、新建项目"><span class="post-toc-text">4、新建项目</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#5、配置及运行"><span class="post-toc-text">5、配置及运行</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#6、运行结果"><span class="post-toc-text">6、运行结果</span></a></li></ol>
             </nav>
             
         </aside>
@@ -194,16 +207,19 @@
         <div class="post-main">
 
             <div class="post-content" id="post-content" itemprop="postContent">
-            <a id="more"></a>
-<h3 id="一般Handler写法："><a href="#一般Handler写法：" class="headerlink" title="一般Handler写法："></a>一般Handler写法：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">Handler mHandler = new Handler() &#123;</div><div class="line">@Override</div><div class="line">public void handleMessage(Message msg) &#123;</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h3 id="导致问题："><a href="#导致问题：" class="headerlink" title="导致问题："></a>导致问题：</h3><p>当使用内部类（包括匿名类）来创建Handler的时候，Handler对象会隐式地持有一个外部类对象（通常是一个Activity）的引用,而常常在Activity退出后，消息队列还有未被处理完的消息，此时activity依然被handler引用，导致内存无法回收而内存泄露。</p>
-<h3 id="解决方法："><a href="#解决方法：" class="headerlink" title="解决方法："></a>解决方法：</h3><p>在Handler中增加一个对Activity的弱引用（WeakReference）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">static class MyHandler extends Handler &#123;</div><div class="line">WeakReference mActivityReference;</div><div class="line"></div><div class="line">MyHandler(Activity activity) &#123;</div><div class="line">mActivityReference= new WeakReference(activity);</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Override</div><div class="line">public void handleMessage(Message msg) &#123;</div><div class="line">final Activity activity = mActivityReference.get();</div><div class="line">if (activity != null) &#123;</div><div class="line">mImageView.setImageBitmap(mBitmap);</div><div class="line">&#125;</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>对于上面的代码，用户在关闭Activity之后，就算后台线程还没结束，但由于仅有一条来自Handler的弱引用指向Activity，所以GC仍然会在检查的时候把Activity回收掉。这样，内存泄露的问题就不会出现了。</p>
+            <hr>
+<p>Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。</p>
+<h3 id="1、安装Android-Studio"><a href="#1、安装Android-Studio" class="headerlink" title="1、安装Android Studio"></a>1、安装Android Studio</h3><p>  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 </p>
+<h3 id="2、Android-NDK"><a href="#2、Android-NDK" class="headerlink" title="2、Android NDK"></a>2、Android NDK</h3><p>安装好Android Studio后打开然后点击File-&gt;Other Strings-&gt;Default Project Structure的到如下图所示界面<br><img src="/img/android/jni1.png" alt=""></p>
+<h3 id="3、安装Cmake和-LLDB和NDK"><a href="#3、安装Cmake和-LLDB和NDK" class="headerlink" title="3、安装Cmake和 LLDB和NDK"></a>3、安装Cmake和 LLDB和NDK</h3><p>打开System Settings-&gt;Android SDK-&gt;SDK Tools选中Cmake、LLDB和NDK点击确认，软件会自动安装。<br><img src="/img/android/jni2.png" alt=""></p>
+<h3 id="4、新建项目"><a href="#4、新建项目" class="headerlink" title="4、新建项目"></a>4、新建项目</h3><p>新建一个支持 “Include C++ Support” 的项目，把 Include C++ Support 前面的选项打上勾，然后一路 Next，直到 Finish 为止<br><img src="/img/android/jni3.png" alt=""></p>
+<h3 id="5、配置及运行"><a href="#5、配置及运行" class="headerlink" title="5、配置及运行"></a>5、配置及运行</h3><p> 新建完NDk项目之后会自动编译这时会自动生成一些配置，项目中会多几个文件如图：<br><img src="/img/android/jni4.png" alt=""><br>在、build.gradle文件中会多出如下配置<br><img src="/img/android/jni5.png" alt=""><br>MainActivity 部分<br><img src="/img/android/jni6.png" alt=""><br>CMakeLists.txt 部分 其中红色方框部分的名称可以同时更改, 注意两者需要一致,也必须和MainActivity中相同<br><img src="/img/android/jni7.png" alt=""><br>C/C++ 部分<br><img src="/img/android/jni8.png" alt=""></p>
+<h3 id="6、运行结果"><a href="#6、运行结果" class="headerlink" title="6、运行结果"></a>6、运行结果</h3><p><img src="/img/android/jni9.png" alt=""></p>
 
             <blockquote>
                 <p>
                 本文地址：
-                <a href="http://maxiaogit.github.io/2016/09/05/android-memory/" target="_blank" rel="external">http://maxiaogit.github.io/2016/09/05/android-memory/</a>
+                <a href="http://maxiaogit.github.io/2016/12/20/JNI环境配置/" target="_blank" rel="external">http://maxiaogit.github.io/2016/12/20/JNI环境配置/</a>
                 </p>
                 <footer><cite><a href="http://maxiaogit.github.io">@个人博客</a></cite></footer>
             </blockquote>
@@ -211,19 +227,12 @@
             
 <nav class="post-nav">
   
-    <div class="waves-block waves-effect prev fl">
-      <a href="/2016/12/20/JNI环境配置/" id="post-prev" class="post-nav-link">
-        <div class="tips"><i class="icon icon-angle-left icon-lg icon-pr"></i> Prev</div>
-        <h4 class="title">Android Studio 2.2 搭建JNI开发环境</h4>
-      </a>
-    </div>
-  
 
   
     <div class="waves-block waves-effect next fr">
-      <a href="/2016/07/24/android 沉浸式状态栏/" id="post-next" class="post-nav-link">
+      <a href="/2016/09/05/android-memory/" id="post-next" class="post-nav-link">
         <div class="tips">Next <i class="icon icon-angle-right icon-lg icon-pl"></i></div>
-        <h4 class="title">android 沉浸式状态栏</h4>
+        <h4 class="title">Handler导致内存泄露问题</h4>
       </a>
     </div>
   
@@ -234,7 +243,7 @@
             
 <div class="duoshuo">
 	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key="android-memory" data-title="Handler导致内存泄露问题" data-url="http://maxiaogit.github.io/2016/09/05/android-memory/index.html"></div>
+	<div class="ds-thread" data-thread-key="JNI环境配置" data-title="Android Studio 2.2 搭建JNI开发环境" data-url="http://maxiaogit.github.io/2016/12/20/JNI环境配置/index.html"></div>
 	<!-- 多说评论框 end -->
 	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 	<script type="text/javascript">
@@ -265,10 +274,10 @@
 
 <script>
 var BLOG_SHARE = {
-    title: "Handler导致内存泄露问题",
+    title: "Android Studio 2.2 搭建JNI开发环境",
     pic: "/img/logos.jpg",
     summary: document.getElementsByName('summary')[0].content,
-    url: "http://maxiaogit.github.io/2016/09/05/android-memory/index.html"
+    url: "http://maxiaogit.github.io/2016/12/20/JNI环境配置/index.html"
 };
 </script>
 <div class="global-share" id="global-share">

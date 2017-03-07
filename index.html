@@ -127,6 +127,49 @@
       <ul class="post-list">
   
     <li class="post-list-item">
+        <article id="post-JNI环境配置" 
+  class="article article-type-post" itemprop="blogPost">
+     
+
+
+  
+    <h3 class="post-title" itemprop="name">
+      <a class="post-title-link" href="/2016/12/20/JNI环境配置/">Android Studio 2.2 搭建JNI开发环境</a>
+    </h3>
+  
+
+
+
+    <div class="post-meta">
+        <time datetime="2016-12-20T14:20:34.000Z" itemprop="datePublished" class="post-time">
+  2016-12-20
+</time>
+
+        
+
+ 
+    </div>
+    
+    <div class="post-content" id="post-content" itemprop="postContent" >
+    
+        <hr>
+<p>Android Studio 从2.2版本开始开发 NDK 便简单了很多，比起使用 javac、javah 命令才能完成的方式简直是质的提升，就是本文所讲的 CMake 方式了。</p>
+<h3 id="1、安装Android-Studio"><a href="#1、安装Android-Studio" class="headerlink" title="1、安装Android Studio"></a>1、安装Android Studio</h3><p>  安装Android Studio 就不说了可以自行百度，安装版本在2.2以上就可。 </p>
+<h3 id="2、Android-NDK"><a href="#2、Android-NDK" class="headerlink" title="2、Android NDK"></a>2、Android NDK</h3><p>安装好Android Studio后打开然后点击File-&gt;Other Strings-&gt;Default Project Structure的到如下图所示界面<br><img src="/img/android/jni1.png" alt=""></p>
+<h3 id="3、安装Cmake和-LLDB和NDK"><a href="#3、安装Cmake和-LLDB和NDK" class="headerlink" title="3、安装Cmake和 LLDB和NDK"></a>3、安装Cmake和 LLDB和NDK</h3><p>打开System Settings-&gt;Android SDK-&gt;SDK Tools选中Cmake、LLDB和NDK点击确认，软件会自动安装。<br><img src="/img/android/jni2.png" alt=""></p>
+<h3 id="4、新建项目"><a href="#4、新建项目" class="headerlink" title="4、新建项目"></a>4、新建项目</h3><p>新建一个支持 “Include C++ Support” 的项目，把 Include C++ Support 前面的选项打上勾，然后一路 Next，直到 Finish 为止<br><img src="/img/android/jni3.png" alt=""></p>
+<h3 id="5、配置及运行"><a href="#5、配置及运行" class="headerlink" title="5、配置及运行"></a>5、配置及运行</h3><p> 新建完NDk项目之后会自动编译这时会自动生成一些配置，项目中会多几个文件如图：<br><img src="/img/android/jni4.png" alt=""><br>在、build.gradle文件中会多出如下配置<br><img src="/img/android/jni5.png" alt=""><br>MainActivity 部分<br><img src="/img/android/jni6.png" alt=""><br>CMakeLists.txt 部分 其中红色方框部分的名称可以同时更改, 注意两者需要一致,也必须和MainActivity中相同<br><img src="/img/android/jni7.png" alt=""><br>C/C++ 部分<br><img src="/img/android/jni8.png" alt=""></p>
+<h3 id="6、运行结果"><a href="#6、运行结果" class="headerlink" title="6、运行结果"></a>6、运行结果</h3><p><img src="/img/android/jni9.png" alt=""></p>
+
+    
+    </div>
+    
+	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
+
+</article>
+    </li>
+  
+    <li class="post-list-item">
         <article id="post-android-memory" 
   class="article article-type-post" itemprop="blogPost">
      
@@ -452,43 +495,6 @@
     </div>
     
 	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Git/">Git</a></li></ul>
-
-</article>
-    </li>
-  
-    <li class="post-list-item">
-        <article id="post-android-studio常用快捷键" 
-  class="article article-type-post" itemprop="blogPost">
-     
-
-
-  
-    <h3 class="post-title" itemprop="name">
-      <a class="post-title-link" href="/2015/03/15/android-studio常用快捷键/">Android Studio常用快捷键</a>
-    </h3>
-  
-
-
-
-    <div class="post-meta">
-        <time datetime="2015-03-15T13:40:34.000Z" itemprop="datePublished" class="post-time">
-  2015-03-15
-</time>
-
-        
-	<ul class="article-category-list"><li class="article-category-list-item"><a class="article-category-list-link" href="/categories/android/">android</a></li></ul>
-
-
- 
-    </div>
-    
-    <div class="post-content" id="post-content" itemprop="postContent" >
-    
-        <h2 id=""><a href="#" class="headerlink" title=""></a>
-    
-    </div>
-    
-	<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li></ul>
 
 </article>
     </li>
